@@ -1,5 +1,12 @@
 Revision history for Module-Patch
 
+0.03    2012-04-03
+
+        - Fix conflict checking.
+
+        - Add some tests.
+
+
 0.02    2012-04-03
 
         - Support 'config' for per-patch-module configuration (see
