@@ -232,7 +232,7 @@ sub patch_data {
 
 =head1 DESCRIPTION
 
-Module::Patch helps you create a C<patch module>, a module that (monkey-)patches
+Module::Patch helps you create a I<patch module>, a module that (monkey-)patches
 other module by replacing some of its subroutines.
 
 Patch module should be named I<Some::Module>::patch::I<your_category>. For
