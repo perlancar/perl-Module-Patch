@@ -112,6 +112,7 @@ sub import {
     for my $n (grep {ref($sym->{$_}) eq 'HASH'} keys %$sym) {
         $n =~ s/::$//;
         my $fn = "$prefix\::$n";
+        next if $fn eq $self;
         my $fnp = $fn; $fnp =~ s!::!/!g; $fnp .= ".pm";
         eval { require $fnp };
         die "Can't load '$fn' when checking for conflict: $@" if $@;
