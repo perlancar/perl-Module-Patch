@@ -1,5 +1,11 @@
 Revision history for Module-Patch
 
+0.02    2012-04-03
+
+        - Support 'config' for per-patch-module configuration (see
+          LWP::UserAgent::patch::https_hard_timeout for example).
+
+
 0.01    2012-04-03
 
         First release. No tests yet.
