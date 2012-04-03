@@ -3,6 +3,7 @@ package Module::Patch;
 use 5.010001;
 use strict;
 use warnings;
+use Log::Any '$log';
 
 use Carp;
 use Module::Loaded;
@@ -12,9 +13,10 @@ use Monkey::Patch qw(:all);
 
 sub import {
     no strict 'refs';
+    no warnings; # W lines generates warning
 
     my ($self, %args) = @_;
-    my $handle = \%{"$self\::handle"};
+    my $handle = \%{"$self\::handle"}; #W
 
     # already patched, ignore
     return if keys %$handle;
@@ -29,7 +31,6 @@ sub import {
         $on_uv = $args{-on_conflict};
         delete $args{-on_conflict};
     }
-    die "Unknown option: ".join(", ", keys %args) if %args;
 
     my $target = $self;
     $target =~ s/(?<=\w)::patch::\w+$//
@@ -46,6 +47,25 @@ sub import {
     my $pdata = $self->patch_data;
     ref($pdata) eq 'HASH'
         or die "BUG: patch_data() does not return a hash";
+
+    # read patch module's configs
+    my $pcdata = $pdata->{config} // {};
+    my $config = \%{"$self\::config"};
+    while (my ($k, $v) = each %$pcdata) {
+        $config->{$k} = $v->{default};
+        if (exists $args{$k}) {
+            $config->{$k} = $args{$k};
+            delete $args{$k};
+        }
+    }
+    # Log::Any::App not init() yet
+    #$log->tracef("Patch module config: %s", $config);
+    #use Data::Dump; dd $config;
+
+    die "Unknown option: ".join(", ", keys %args) if %args;
+
+    # check version
+
     my $vers = $pdata->{versions};
     ref($vers) eq 'HASH'
         or die "BUG: patch data must contain 'versions' and it must be a hash";
