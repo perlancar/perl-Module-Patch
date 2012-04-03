@@ -11,6 +11,8 @@ use Monkey::Patch qw(:all);
 
 # VERSION
 
+my %applied_patches; # key = targetmod, value = [patchmod1, ...]
+
 sub import {
     no strict 'refs';
     no warnings; # W lines generates warning
@@ -28,7 +30,7 @@ sub import {
     }
     my $on_c = 'die';
     if ($args{-on_conflict}) {
-        $on_uv = $args{-on_conflict};
+        $on_c = $args{-on_conflict};
         delete $args{-on_conflict};
     }
 
@@ -105,19 +107,13 @@ sub import {
 
     # check conflict with other patch modules
 
-    my $prefix = "$target\::patch\::";
-    my $sym = \%{$prefix};
     my @conflicts;
+    $applied_patches{$target} //= [];
   CHECK_C:
-    for my $n (grep {ref($sym->{$_}) eq 'HASH'} keys %$sym) {
-        $n =~ s/::$//;
-        my $fn = "$prefix\::$n";
-        next if $fn eq $self;
-        my $fnp = $fn; $fnp =~ s!::!/!g; $fnp .= ".pm";
-        eval { require $fnp };
-        die "Can't load '$fn' when checking for conflict: $@" if $@;
+    for my $pmod (@{$applied_patches{$target}}) {
+        next if $pmod eq $self;
 
-        my $opdata = $fnp->patch_data;
+        my $opdata = $pmod->patch_data;
         my $overs = $opdata->{versions};
         my $opvdata;
         my $c;
@@ -129,10 +125,10 @@ sub import {
             }
         }
         if ($c) {
-            my $osubs = keys %{$opvdata->{subs}};
+            my $osubs = [keys %{$opvdata->{subs}}];
             for my $sub (keys %{$pvdata->{subs}}) {
                 if ($sub ~~ @$osubs) {
-                    push @conflicts, "$target\::$sub (from $fn)";
+                    push @conflicts, "$target\::$sub (from $pmod)";
                 }
             }
         }
@@ -162,6 +158,7 @@ sub import {
     while (my ($n, $sub) = each %{$pvdata->{subs}}) {
         $handle->{$n} = patch_package $target, $n, $sub;
     }
+    push @{ $applied_patches{$target} }, $self;
 
 }
 
