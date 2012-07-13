@@ -1,5 +1,18 @@
 Revision history for Module-Patch
 
+0.06    2012-07-13 (SHARYANTO)
+
+        [ENHANCEMENTS]
+
+        - Error messages are now more helpful, include suggestions on how to
+          remedy situation.
+
+        [BUG FIXES]
+
+        - Forgot to update internal data on unimport(), this caused force
+          loading multiple patch modules to fail.
+
+
 0.05    2012-07-12 (SHARYANTO)
 
         [ENHANCEMENTS]
