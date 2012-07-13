@@ -28,7 +28,7 @@ sub __match_v {
     0;
 }
 
-my %applied_patches; # key = targetmod, value = [patchmod1, ...]
+our %applied_patches; # key = targetmod, value = [patchmod1, ...]
 
 sub import {
     no strict 'refs';
@@ -112,8 +112,9 @@ sub import {
     # check target version
 
     my $v_found;
-    my ($v0, $pvdata);
-    while (($v0, $pvdata) = each %$vers) {
+    my $pvdata;
+    for my $v0 (sort keys %$vers) {
+        $pvdata = $vers->{$v0};
         do { $v_found++; last } if __match_v($target_ver, $v0);
     }
     unless ($v_found) {
@@ -158,6 +159,7 @@ sub import {
         my $overs = $opdata->{versions};
         my $opvdata;
         my $c;
+        my $v0;
         while (($v0, $opvdata) = each %$overs) {
             do { $c++; last } if __match_v($target_ver, $v0);
         }
@@ -218,6 +220,13 @@ sub unimport {
     my $handle = \%{"$self\::handle"};
 
     delete $handle->{$_} for keys %$handle;
+
+    my $target = $self;
+    $target =~ s/(?<=\w)::patch::\w+$//;
+
+    $applied_patches{$target} //= [];
+    $applied_patches{$target} = [grep {$_ ne $self}
+        @{ $applied_patches{$target} }];
 }
 
 sub patch_data {
