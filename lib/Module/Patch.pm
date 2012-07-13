@@ -94,7 +94,7 @@ sub import {
 
     my $v_found;
     my ($v0, $pvdata);
-    while (($v0, undef) = each %$vers) {
+    while (($v0, $pvdata) = each %$vers) {
         do { $v_found++; last } if __match_v($target_ver, $v0);
     }
     unless ($v_found) {
@@ -170,7 +170,6 @@ sub import {
         $handle->{$n} = patch_package $target, $n, $sub;
     }
     push @{ $applied_patches{$target} }, $self;
-
 }
 
 sub unimport {
