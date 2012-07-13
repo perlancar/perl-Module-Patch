@@ -49,6 +49,9 @@ subtest "version matching" => sub {
     }
 };
 
+throws_ok { use_ "My::Target::patch::cat1", -zzz=>0 } qr/unknown/i,
+    'unknown option -> dies';
+
 lives_ok { use_ "My::Target::patch::cat1" } 'patch module can be loaded';
 is(My::Target::foo(), "foo from My::Target::patch::cat1", "subroutine patched");
 is($My::Target::patch::cat1::config{-v1}, 10, "default config set");
