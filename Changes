@@ -1,18 +1,27 @@
 Revision history for Module-Patch
 
-0.03    2012-04-03
+0.04    2012-04-03 (SHARYANTO)
+
+        [ENHANCEMENTS]
+
+        - Check existence of target subroutines.
+
+        - Allow regex in version specification.
+
+
+0.03    2012-04-03 (SHARYANTO)
 
         - Fix conflict checking.
 
         - Add some tests.
 
 
-0.02    2012-04-03
+0.02    2012-04-03 (SHARYANTO)
 
         - Support 'config' for per-patch-module configuration (see
           LWP::UserAgent::patch::https_hard_timeout for example).
 
 
-0.01    2012-04-03
+0.01    2012-04-03 (SHARYANTO)
 
         First release. No tests yet.
