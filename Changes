@@ -1,6 +1,14 @@
 Revision history for Module-Patch
 
-0.04    2012-04-03 (SHARYANTO)
+0.05    2012-07-12 (SHARYANTO)
+
+        [ENHANCEMENTS]
+
+        - Add -load_target option, defaults to true (so you no longer have to
+          'use' target module first before 'use'-ing the patch module).
+
+
+0.04    2012-07-12 (SHARYANTO)
 
         [ENHANCEMENTS]
 
