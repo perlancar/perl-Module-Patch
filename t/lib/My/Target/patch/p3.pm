@@ -1,4 +1,4 @@
-package My::Target::patch::cat2;
+package My::Target::patch::p3;
 
 use parent qw(Module::Patch);
 
@@ -7,9 +7,9 @@ our %config;
 sub patch_data {
     return {
         versions => {
-            '0.13' => {
+            '0.12' => {
                 subs => {
-                    foo => sub { "foo from My::Target::patch::cat2" },
+                    bar => sub { "bar from p3" },
                 },
             },
         },

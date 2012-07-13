@@ -9,7 +9,7 @@ sub patch_data {
         versions => {
             '0.12' => {
                 subs => {
-                    qux => sub { "qux from My::Target::patch::unknownsub" },
+                    qux => sub { "qux from unknownsub" },
                 },
             },
         },

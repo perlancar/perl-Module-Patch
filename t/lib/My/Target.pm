@@ -2,8 +2,8 @@ package My::Target;
 
 our $VERSION = '0.12';
 
-sub foo { "foo from My::Target" }
-sub bar { "bar from My::Target" }
+sub foo { "original foo" }
+sub bar { "original bar" }
 
 1;
 # ABSTRACT: Sample target module
