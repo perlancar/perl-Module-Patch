@@ -67,14 +67,14 @@ sub import {
         if ($load) {
             load $target;
         } else {
-            croak "$pre: $target is not loaded, please 'use $target' ".
+            croak "FATAL: $pre: $target is not loaded, please 'use $target' ".
                 "before patching";
         }
     }
 
     my $target_ver = ${"$target\::VERSION"};
     defined($target_ver) && length($target_ver)
-        or croak "$pre: Target module '$target' does not have \$VERSION";
+        or croak "FATAL: $pre: Target module '$target' does not have \$VERSION";
 
     my $pdata = $self->patch_data;
     ref($pdata) eq 'HASH'
@@ -94,7 +94,14 @@ sub import {
     #$log->tracef("Patch module config: %s", $config);
     #use Data::Dump; dd $config;
 
-    croak "$pre: Unknown option: ".join(", ", keys %args) if %args;
+    if (%args) {
+        croak join(
+            "",
+            "FATAL: $pre: Unknown option: ", join(", ", keys %args), ". ",
+            "Please consult Module::Patch documentation for available ",
+            "options."
+        );
+    }
 
     # check version
 
@@ -110,22 +117,32 @@ sub import {
         do { $v_found++; last } if __match_v($target_ver, $v0);
     }
     unless ($v_found) {
-        my $msg = "$pre: Target module '$target' version not supported by ".
-            "patch module '$self', only these version(s) supported: ".
-                join(" ", sort keys %$vers);
+        my $msg1 = join(
+            "",
+            "$pre: Target module '$target' version ($target_ver) is not ",
+            "supported by patch module '$self', only these versions are ",
+            "supported: ", join(" ", sort keys %$vers), ". ",
+        );
+        my $msg2 = join(
+            "",
+            "Not patching the module. If you insist on patching anyway, pass ",
+            "the -on_unknown_version => 'force' option when 'use'-ing the ",
+            "patch module."
+        );
+        my $msg3 = "Patching anyway.";
         if ($on_uv eq 'ignore') {
             # do not warn, but do nothing
             return;
         } elsif ($on_uv eq 'warn') {
             # warn, and do nothing
-            carp $msg;
+            carp $msg1 . $msg2;
             return;
         } elsif ($on_uv eq 'force') {
             # warn, and force patching
-            carp $msg;
+            carp $msg1 . $msg3;
         } else {
             # default is 'die'
-            croak $msg;
+            croak "FATAL: " . $msg1 . $msg2;
         }
     }
 
@@ -155,28 +172,38 @@ sub import {
     }
 
     if (@conflicts) {
-        my $msg = "$pre: Patch module '$self' conflicts with other loaded ".
-            "patch modules, here are the conflicting subroutines: ".
-                join(", ", @conflicts);
+        my $msg1 = join(
+            "",
+            "$pre: Patch module '$self' conflicts with other loaded ",
+            "patch modules, here are the conflicting subroutines: ",
+            join(", ", @conflicts), ". "
+        );
+        my $msg2 = join(
+            "",
+            "Not patching the module. If you insist on patching anyway, pass ",
+            "the -on_conflict => 'force' option when 'use'-ing the ",
+            "patch module."
+        );
+        my $msg3 = "Patching anyway.";
         if ($on_c eq 'ignore') {
             # do not warn, but do nothing
             return;
         } elsif ($on_c eq 'warn') {
-            carp $msg;
+            carp $msg1 . $msg2;
             return;
         } elsif ($on_c eq 'force') {
             # warn, but apply anyway
-            carp $msg;
+            carp $msg1 . $msg3;
         } else {
             # default is 'die'
-            croak $msg;
+            croak "FATAL: " . $msg1 . $msg2;
         }
     }
 
     # patch!
 
     while (my ($n, $sub) = each %{$pvdata->{subs}}) {
-        croak "$pre: Target subroutine $target\::$n does not exist"
+        croak "FATAL: $pre: Target subroutine $target\::$n does not exist"
             unless defined(&{"$target\::$n"});
 
         $handle->{$n} = patch_package $target, $n, $sub;
