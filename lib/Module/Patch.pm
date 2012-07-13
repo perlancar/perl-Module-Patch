@@ -20,6 +20,8 @@ sub import {
     my ($self, %args) = @_;
     my $handle = \%{"$self\::handle"}; #W
 
+    my $pre = $self; # error message prefix
+
     # already patched, ignore
     return if keys %$handle;
 
@@ -34,17 +36,17 @@ sub import {
         delete $args{-on_conflict};
     }
 
-    my $target = $self;
+    my $target = "$self";
     $target =~ s/(?<=\w)::patch::\w+$//
-        or croak "BUG: Bad patch module name '$target', it should end with ".
-            "'::patch::something'";
+        or die "BUG: Bad patch module name '$target', it should ".
+            "end with '::patch::something'";
 
-    croak "$target is not loaded, please 'use $target' before patching"
+    croak "$pre: $target is not loaded, please 'use $target' before patching"
         unless is_loaded($target);
 
     my $target_ver = ${"$target\::VERSION"};
     defined($target_ver) && length($target_ver)
-        or croak "Target module '$target' does not have \$VERSION";
+        or croak "$pre: Target module '$target' does not have \$VERSION";
 
     my $pdata = $self->patch_data;
     ref($pdata) eq 'HASH'
@@ -64,7 +66,7 @@ sub import {
     #$log->tracef("Patch module config: %s", $config);
     #use Data::Dump; dd $config;
 
-    die "Unknown option: ".join(", ", keys %args) if %args;
+    croak "$pre: Unknown option: ".join(", ", keys %args) if %args;
 
     # check version
 
@@ -86,8 +88,8 @@ sub import {
         }
     }
     unless ($v_found) {
-        my $msg = "Target module '$target' version not supported by patch ".
-            "module '$self', only these version(s) supported: ".
+        my $msg = "$pre: Target module '$target' version not supported by ".
+            "patch module '$self', only these version(s) supported: ".
                 join(" ", @all_v);
         if ($on_uv eq 'ignore') {
             # do not warn, but do nothing
@@ -135,7 +137,7 @@ sub import {
     }
 
     if (@conflicts) {
-        my $msg = "Patch module '$self' conflicts with other loaded ".
+        my $msg = "$pre: Patch module '$self' conflicts with other loaded ".
             "patch modules, here are the conflicting subroutines: ".
                 join(", ", @conflicts);
         if ($on_c eq 'ignore') {
@@ -156,6 +158,9 @@ sub import {
     # patch!
 
     while (my ($n, $sub) = each %{$pvdata->{subs}}) {
+        croak "$pre: Target subroutine $target\::$n does not exist"
+            unless defined(&{"$target\::$n"});
+
         $handle->{$n} = patch_package $target, $n, $sub;
     }
     push @{ $applied_patches{$target} }, $self;
