@@ -6,6 +6,7 @@ use warnings;
 use Log::Any '$log';
 
 use Carp;
+use Module::Load;
 use Module::Loaded;
 use Monkey::Patch qw(:all);
 
@@ -42,14 +43,19 @@ sub import {
     return if keys %$handle;
 
     my $on_uv = 'die';
-    if ($args{-on_unknown_version}) {
+    if (exists $args{-on_unknown_version}) {
         $on_uv = $args{-on_unknown_version};
         delete $args{-on_unknown_version};
     }
     my $on_c = 'die';
-    if ($args{-on_conflict}) {
+    if (exists $args{-on_conflict}) {
         $on_c = $args{-on_conflict};
         delete $args{-on_conflict};
+    }
+    my $load = 1;
+    if (exists $args{-load_target}) {
+        $load = $args{-load_target};
+        delete $args{-load_target};
     }
 
     my $target = $self;
@@ -57,8 +63,14 @@ sub import {
         or die "BUG: Bad patch module name '$target', it should ".
             "end with '::patch::something'";
 
-    croak "$pre: $target is not loaded, please 'use $target' before patching"
-        unless is_loaded($target);
+    unless (is_loaded $target) {
+        if ($load) {
+            load $target;
+        } else {
+            croak "$pre: $target is not loaded, please 'use $target' ".
+                "before patching";
+        }
+    }
 
     my $target_ver = ${"$target\::VERSION"};
     defined($target_ver) && length($target_ver)
@@ -286,12 +298,10 @@ Version can be a single version, or several versions separated by space.
 
 =head2 Using the patch module
 
-First 'use' the target module. Patch module will refuse to load unless target
-module is already loaded.
-
-Then 'use' the patch module. This will wrap the target subroutine(s) with the
-one(s) provided by the patch module. There are several options available when
-importing:
+You simply 'use' the patch module. If the target module is not loaded, it will
+be loaded by the patch module. The patch module will then wrap the target
+subroutine(s) with the one(s) provided by the patch module. There are several
+options available when importing:
 
 =over 4
 
@@ -306,6 +316,12 @@ patch without warning. 'force' will display warning and proceed with patching.
 If there is a conflict with other patch module(s), the default is to die. 'warn'
 will display a warning and refuse to patch. 'ignore' will refuse to patch
 without warning. 'force' will display warning and proceed with patching.
+
+=item * -load_target => BOOL (default: 1)
+
+Whether to attempt to load target module if it's not loaded. Normally you want
+to keep this on, unless the target module is 'main' or already defined somewhere
+else (not in the usual Module/SubModule.pm file expected by require()).
 
 =back
 
