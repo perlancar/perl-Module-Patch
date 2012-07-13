@@ -36,7 +36,7 @@ sub import {
         delete $args{-on_conflict};
     }
 
-    my $target = "$self";
+    my $target = $self;
     $target =~ s/(?<=\w)::patch::\w+$//
         or die "BUG: Bad patch module name '$target', it should ".
             "end with '::patch::something'";
