@@ -56,6 +56,9 @@ is(My::Target::foo(), "foo from My::Target::patch::cat1", "subroutine patched");
 is($My::Target::patch::cat1::config{-v1}, 10, "default config set");
 no_ "My::Target::patch::cat1";
 
+throws_ok { use_ "My::Target::patch::unknownsub" } qr/unknown/i,
+    'unknown sub -> dies';
+
 use_ "My::Target::patch::cat1", -v1 => 100;
 is($My::Target::patch::cat1::config{-v1}, 100, "setting config works");
 no_ "My::Target::patch::cat1";
