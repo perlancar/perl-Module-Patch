@@ -11,6 +11,22 @@ use Monkey::Patch qw(:all);
 
 # VERSION
 
+# match versions specification string, e.g. whether target '2.07' is in '1.23
+# 1.24 /^2\..+$/' (answer: it is)
+sub __match_v {
+    my ($target, $spec) = @_;
+
+    my @v = split /[,;]?\s+/, $spec;
+    for (@v) {
+        if (s!^/(.*)/$!$1!) {
+            return 1 if $target ~~ /$_/;
+        } else {
+            return 1 if $target eq $_;
+        }
+    }
+    0;
+}
+
 my %applied_patches; # key = targetmod, value = [patchmod1, ...]
 
 sub import {
@@ -77,20 +93,14 @@ sub import {
     # check target version
 
     my $v_found;
-    my @all_v;
     my ($v0, $pvdata);
-    while (($v0, $pvdata) = each %$vers) {
-        my @v = split /[,;]?\s+/, $v0;
-        push @all_v, @v;
-        if ($target_ver ~~ @v) {
-            $v_found++;
-            last;
-        }
+    while (($v0, undef) = each %$vers) {
+        do { $v_found++; last } if __match_v($target_ver, $v0);
     }
     unless ($v_found) {
         my $msg = "$pre: Target module '$target' version not supported by ".
             "patch module '$self', only these version(s) supported: ".
-                join(" ", @all_v);
+                join(" ", sort keys %$vers);
         if ($on_uv eq 'ignore') {
             # do not warn, but do nothing
             return;
@@ -120,11 +130,7 @@ sub import {
         my $opvdata;
         my $c;
         while (($v0, $opvdata) = each %$overs) {
-            my @v = split /[,;]?\s+/, $v0;
-            if ($target_ver ~~ @v) {
-                $c++;
-                last;
-            }
+            do { $c++; last } if __match_v($target_ver, $v0);
         }
         if ($c) {
             my $osubs = [keys %{$opvdata->{subs}}];
@@ -191,21 +197,30 @@ sub patch_data {
  use parent qw(Module::Patch);
 
  sub patch_data {
-     my $foo = sub {
+     my $my_foo = sub {
          my $orig = shift;
          ...
      };
      return {
          versions => {
+             # version specification can be a single version string
              '1.00' => {
                  subs => {
                      foo => $my_foo,
+                     bar => sub { ... },
+                     ...
                  },
              },
-             '1.02 1.03' => {
-                 subs => {
-                     foo => $my_foo,
-                 },
+
+             # or multiple versions, separated by whitespace
+             '1.02 1.03 /^2\..+$/' => {
+                 ...
+             },
+
+             # also can contain a regex (/.../), no spaces in regex though. and
+             # watch out for escapes.
+             '1.99 /^2[.].+$/' => {
+                 ...
              },
          },
      };

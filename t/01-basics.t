@@ -29,6 +29,26 @@ sub no_ {
 throws_ok { use_ "My::Target::patch::cat1" } qr/before/,
     'target module must be loaded before patch module';
 
+subtest "version matching" => sub {
+    my @tests = (
+        ['1.23', '1.23', 1],
+        ['1.24', '1.23', 0],
+        ['1.24', '1.23 1.24', 1],
+        ['1.25', '1.23 1.24', 0],
+        ['1.25', '1.23 1.24 1.25', 1],
+        ['2.01', '1.23 1.24 1.25', 0],
+        ['2.01', '1.23 1.24 1.25 /^2[.].+$/', 1],
+     );
+    for my $t (@tests) {
+        my $res = Module::Patch::__match_v($t->[0], $t->[1]);
+        if ($t->[2]) {
+            ok($res, "'$t->[0]' matches '$t->[1]'");
+        } else {
+            ok(!$res, "'$t->[0]' doesn't match '$t->[1]'");
+        }
+    }
+};
+
 use_ "My::Target";
 
 lives_ok { use_ "My::Target::patch::cat1" } 'patch module can be loaded';
