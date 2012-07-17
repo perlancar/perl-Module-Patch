@@ -102,7 +102,7 @@ sub unimport {
         # do nothing
     } else {
         my $handles = ${"$self\::handles"};
-        #$log->tracef("Unpatching %s ...", [keys %$handles]);
+        $log->tracef("Unpatching %s ...", [keys %$handles]);
         undef ${"$self\::handles"};
         # do we need to undef ${"$self\::config"}?, i'm thinking not really
     }
@@ -187,7 +187,7 @@ sub patch_package {
             }
 
             for my $s (@s) {
-                #$log->tracef("Patching %s ...", $s);
+                $log->tracef("Patching %s ...", $s);
                 my $ctx = {
                     orig_name => "$target\::$s",
                 };
