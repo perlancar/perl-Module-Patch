@@ -1,5 +1,13 @@
 Revision history for Module-Patch
 
+0.08    2012-07-17 (SHARYANTO)
+
+        - Do not check target module's $VERSION if we are not going to match
+          version (mod_version is undef or ':all').
+
+        - Add logging message.
+
+
 0.07    2012-07-17 (SHARYANTO)
 
         [INCOMPATIBLE CHANGES]
