@@ -126,8 +126,7 @@ sub patch_package {
         my @target_subs;
         my %tp = list_package_contents($target);
         for (keys %tp) {
-            if (/\A\w+\z/)  { push @target_subs, $_ }
-            #elsif (s/\A\*/) { push @target_subs, $_ }
+            if (ref($tp{$_}) eq 'CODE' && !/^\*/) { push @target_subs, $_ }
         }
 
         my $i = 0;
