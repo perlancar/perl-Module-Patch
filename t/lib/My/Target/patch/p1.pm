@@ -6,17 +6,19 @@ our %config;
 
 sub patch_data {
     return {
+        v => 2,
         config => {
             -v1 => {default=>10},
             -v2 => {},
         },
-        versions => {
-            '0.11 0.12' => {
-                subs => {
-                    foo => sub { "foo from p1" },
-                },
+        patches => [
+            {
+                action => 'wrap',
+                mod_version => ['0.11', '0.12'],
+                sub_name => 'foo',
+                code => sub { "foo from p1" },
             },
-        },
+        ],
     };
 }
 
