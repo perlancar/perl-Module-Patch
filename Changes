@@ -1,5 +1,12 @@
 Revision history for Module-Patch
 
+0.09    2012-07-17 (SHARYANTO)
+
+        [BUG FIXES]
+
+        - Fix interpreting list_package_contents() result (exclude constants).
+
+
 0.08    2012-07-17 (SHARYANTO)
 
         - Do not check target module's $VERSION if we are not going to match
