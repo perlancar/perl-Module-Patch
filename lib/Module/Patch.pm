@@ -123,9 +123,6 @@ sub patch_package {
         croak "FATAL: Target module '$target' not loaded"
             unless package_exists($target);
         my $target_version = ${"$target\::VERSION"};
-        defined($target_version) && length($target_version)
-            or croak "FATAL: Target package '$target' does not have ".
-                "\$VERSION";
         my @target_subs;
         my %tp = list_package_contents($target);
         for (keys %tp) {
@@ -164,22 +161,29 @@ sub patch_package {
                 }
             }
 
-            my $mod_versions = $pspec->{mod_version} // ':all';
-            $mod_versions = ref($mod_versions) eq 'ARRAY' ?
-                [@$mod_versions] : [$mod_versions];
-            for (@$mod_versions) {
-                $_ = qr/.*/    if $_ eq ':all';
-                die "BUG: patch[$i]: unknown tag in mod_version $_"
-                    if /^:/;
-            }
+            unless (!defined($pspec->{mod_version}) ||
+                        $pspec->{mod_version} eq ':all') {
+                defined($target_version) && length($target_version)
+                    or croak "FATAL: Target package '$target' does not have ".
+                        "\$VERSION";
+                my $mod_versions = $pspec->{mod_version};
+                $mod_versions = ref($mod_versions) eq 'ARRAY' ?
+                    [@$mod_versions] : [$mod_versions];
+                for (@$mod_versions) {
+                    $_ = qr/.*/    if $_ eq ':all';
+                    die "BUG: patch[$i]: unknown tag in mod_version $_"
+                        if /^:/;
+                }
 
-            my $ver_match=match_array_or_regex($target_version, $mod_versions);
-            unless ($ver_match) {
-                carp "patch[$i]: Target module version $target_version ".
-                    "does not match [".join(", ", @$mod_versions)."], ".
-                        ($opts->{force} ? "patching anyway (force)":"skipped").
-                            ".";
-                next PATCH unless $opts->{force};
+                my $ver_match=match_array_or_regex(
+                    $target_version, $mod_versions);
+                unless ($ver_match) {
+                    carp "patch[$i]: Target module version $target_version ".
+                        "does not match [".join(", ", @$mod_versions)."], ".
+                            ($opts->{force} ?
+                                 "patching anyway (force)":"skipped"). ".";
+                    next PATCH unless $opts->{force};
+                }
             }
 
             for my $s (@s) {
