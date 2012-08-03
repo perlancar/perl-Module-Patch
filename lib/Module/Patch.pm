@@ -63,9 +63,11 @@ sub import {
             } elsif ($v == 2) {
                 $mpv = "0.07-0.09";
             }
-            croak "$self requires Module::Patch $mpv ".
-                "(patch_data format v=$v), please install the older version of".
-                    " Module::Patch or upgrade $self to use v=$curv";
+            croak "$self ".(${$self."::VERSION"} // "?").
+                " requires Module::Patch $mpv (patch_data format v=$v),".
+                    " this is Module::Patch ".($Module::Patch::VERSION // '?').
+                        " (v=$curv), please install an older version of ".
+                            "Module::Patch or upgrade $self";
         } elsif ($v == 3) {
             # ok, current version
         } else {
