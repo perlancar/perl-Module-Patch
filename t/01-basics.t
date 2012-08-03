@@ -47,7 +47,7 @@ subtest "patch module config (set)" => sub {
 throws_ok { use_ "My::Target::patch::p1", -v3=>1 } qr/unknown/i,
     'unknown patch module config -> dies';
 
-dies_ok { use_ "My::Target::patch::unknownsub" },
+dies_ok { use_ "My::Target::patch::unknownsub" }
     'unknown target sub -> dies';
 
 subtest 'unknown module version -> unpatched' => sub {
