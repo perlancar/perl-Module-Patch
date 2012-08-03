@@ -172,11 +172,8 @@ sub patch_package {
                     for (@target_subs) {
                         push @s, $_ if $_ !~~ @s && $_ =~ $sub_name;
                     }
-                } elsif ($sub_name ~~ @target_subs) {
-                    push @s, $sub_name;
                 } else {
-                    die "BUG: patch[$i]: no subroutine named $sub_name ".
-                        "found in target package $target";
+                    push @s, $sub_name;
                 }
             }
 
@@ -284,8 +281,8 @@ To create a patch module by subclassing Module::Patch:
 =head1 DESCRIPTION
 
 Module::Patch is basically a convenient way to define and bundle a set of
-patches. Actual patching is done by the nice L<Monkey::Patch>, which provides
-lexically scoped patching.
+patches. Actual patching is done by the nice L<Alt::Monkey::Patch::SHARYANTO>,
+which provides lexically scoped patching.
 
 There are two ways to use this module:
 
@@ -365,7 +362,7 @@ warn and skip patching.
 
 =head1 SEE ALSO
 
-L<Monkey::Patch>
+L<Alt::Monkey::Patch::SHARYANTO>
 
 L<Pod::Weaver::Plugin::ModulePatch>
 

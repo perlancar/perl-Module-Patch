@@ -32,6 +32,7 @@ throws_ok { use_ "My::Target::patch::p1", -load_target=>0 } qr/before/,
 subtest "patch module config (left as default)" => sub {
     lives_ok { use_ "My::Target::patch::p1" } 'load ok';
     is(My::Target::foo(), "foo from p1", "sub patched");
+    is(My::Target::baz(), "baz from p1", "sub added");
     is($My::Target::patch::p1::config{-v1}, 10, "default config set");
     no_ "My::Target::patch::p1";
 };
@@ -46,7 +47,7 @@ subtest "patch module config (set)" => sub {
 throws_ok { use_ "My::Target::patch::p1", -v3=>1 } qr/unknown/i,
     'unknown patch module config -> dies';
 
-throws_ok { use_ "My::Target::patch::unknownsub" } qr/found/i,
+dies_ok { use_ "My::Target::patch::unknownsub" },
     'unknown target sub -> dies';
 
 subtest 'unknown module version -> unpatched' => sub {

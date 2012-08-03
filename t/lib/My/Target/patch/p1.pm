@@ -18,6 +18,11 @@ sub patch_data {
                 sub_name => 'foo',
                 code => sub { "foo from p1" },
             },
+            {
+                action => 'add',
+                sub_name => 'baz',
+                code => sub { "baz from p1" },
+            },
         ],
     };
 }
