@@ -1,5 +1,16 @@
 Revision history for Module-Patch
 
+0.10    2012-08-03 (SHARYANTO) (not yet released)
+
+        [INCOMPATIBLE CHANGES]
+
+        - Change patch_data format (v => 3) because we switch from using
+          Monkey::Patch to Alt::Monkey::Patch::SHARYANTO to support
+          add/replace/delete (aside from wrap). When using the latter, first
+          argument given to wrapper code is not $orig (original subroutine) but
+          $ctx (context hash, original subroutine is in $ctx->{orig}).
+
+
 0.09    2012-07-17 (SHARYANTO)
 
         [BUG FIXES]

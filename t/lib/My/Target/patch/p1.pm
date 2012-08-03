@@ -6,7 +6,7 @@ our %config;
 
 sub patch_data {
     return {
-        v => 2,
+        v => 3,
         config => {
             -v1 => {default=>10},
             -v2 => {},

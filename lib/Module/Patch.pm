@@ -8,7 +8,7 @@ use Log::Any '$log';
 use Carp;
 use Module::Load;
 use Module::Loaded;
-use Monkey::Patch qw();
+use Alt::Monkey::Patch::SHARYANTO qw();
 use Scalar::Util qw(reftype);
 use SHARYANTO::Array::Util qw(match_array_or_regex);
 use SHARYANTO::Package::Util qw(list_package_contents package_exists);
@@ -54,10 +54,23 @@ sub import {
 
         my $pdata = $self->patch_data or
             die "BUG: $self: No patch data supplied";
-        if (($pdata->{v} // 1) < 2) {
-            croak "$self requires Module::Patch 0.06 or earlier ".
-                "(old patch_data format), please install Module::Patch 0.06 ".
-                    "or upgrade $self to use new patch_data format";
+        my $v = $pdata->{v} // 1;
+        my $curv = 3;
+        if ($v == 1 || $v == 2) {
+            my $mpv;
+            if ($v == 1) {
+                $mpv = "0.06 or earlier";
+            } elsif ($v == 2) {
+                $mpv = "0.07-0.09";
+            }
+            croak "$self requires Module::Patch $mpv ".
+                "(patch_data format v=$v), please install the older version of".
+                    " Module::Patch or upgrade $self to use v=$curv";
+        } elsif ($v == 3) {
+            # ok, current version
+        } else {
+            croak "BUG: $self: Unknown patch_data format version ($v), ".
+                "only v=$curv supported by this version of Module::Patch";
         }
 
         my $target = $self;
@@ -133,10 +146,16 @@ sub patch_package {
         my $i = 0;
       PATCH:
         for my $pspec (@$patches_spec) {
-            $pspec->{action} or die "BUG: patch[$i]: no action supplied";
-            $pspec->{action} eq 'wrap' or die "BUG: patch[$i]: ".
-                "action '$pspec->{action}' unknown/unimplemented";
-            $pspec->{code} or die "BUG: patch[$i]: no code supplied";
+            my $act = $pspec->{action};
+            $act or die "BUG: patch[$i]: no action supplied";
+            $act =~ /\A(wrap|add|replace|add_or_replace|delete)\z/ or die
+                "BUG: patch[$i]: action '$pspec->{action}' unknown";
+            if ($act eq 'delete') {
+                $pspec->{code} and die "BUG: patch[$i]: for action 'delete', ".
+                    "code must not be supplied";
+            } else {
+                $pspec->{code} or die "BUG: patch[$i]: code not supplied";
+            }
 
             my $sub_names = ref($pspec->{sub_name}) eq 'ARRAY' ?
                 [@{ $pspec->{sub_name} }] : [$pspec->{sub_name}];
@@ -188,13 +207,9 @@ sub patch_package {
 
             for my $s (@s) {
                 $log->tracef("Patching %s ...", $s);
-                my $ctx = {
-                    orig_name => "$target\::$s",
-                };
-                $handles->{"$target\::$s"} = Monkey::Patch::patch_package(
-                    $target, $s,
-                    sub { unshift @_, $ctx; goto &{$pspec->{code}} }
-                );
+                $handles->{"$target\::$s"} =
+                    Alt::Monkey::Patch::SHARYANTO::patch_package(
+                        $target, $s, $act, $pspec->{code});
             }
 
             $i++;
@@ -279,9 +294,9 @@ There are two ways to use this module:
 =item * subclass it
 
 This is used for convenient bundling of patches. You create a I<patch module> (a
-module that monkey-patches other module by adding/wrapping/deleting subroutines
-of target module) by subclassing Module::Patch and providing the patches_spec in
-patch_data() method.
+module that monkey-patches other module by adding/replacing/wrapping/deleting
+subroutines of target module) by subclassing Module::Patch and providing the
+patches_spec in patch_data() method.
 
 Patch module should be named I<Some::Module>::patch::I<your_category>. For
 example, L<HTTP::Daemon::patch::ipv6>.
@@ -323,17 +338,18 @@ Patch target package C<$package> with a set of patches.
 
 C<$patches_spec> is an arrayref containing a series of patch specification.
 Patch specification is a hashref containing these keys: C<action> (string,
-required; either 'wrap', 'add', 'delete'), C<mod_version> (string/regex or array
-of string/regex, can be ':all' to mean all versions; optional; defaults to
-':all'). C<sub_name> (string/regex or array of string/regex, subroutine(s) to
-patch, can be ':all' to mean all subroutine, ':public' to mean all public
-subroutines [those not prefixed by C<_>], ':private' to mean all private),
-C<code> (coderef, not required if C<action> is 'delete').
+required; either 'wrap', 'add', 'replace', 'add_or_replace', 'delete'),
+C<mod_version> (string/regex or array of string/regex, can be ':all' to mean all
+versions; optional; defaults to ':all'). C<sub_name> (string/regex or array of
+string/regex, subroutine(s) to patch, can be ':all' to mean all subroutine,
+':public' to mean all public subroutines [those not prefixed by C<_>],
+':private' to mean all private), C<code> (coderef, not required if C<action> is
+'delete').
 
-Die if there is conflict when patching, for example if target module has been
-patched 'delete' and another patch wants to 'wrap' it.
+Die if there is conflict with other patch modules (patchsets), for example if
+target module has been patched 'delete' and another patch wants to 'wrap' it.
 
-NOTE: Action 'add', 'delete', and conflict checking not yet implemented.
+NOTE: conflict checking with other patchsets not yet implemented.
 
 Known options:
 
