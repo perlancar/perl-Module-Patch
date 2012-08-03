@@ -1,6 +1,6 @@
 Revision history for Module-Patch
 
-0.10    2012-08-03 (SHARYANTO) (not yet released)
+0.10    2012-08-03 (SHARYANTO)
 
         [INCOMPATIBLE CHANGES]
 
@@ -9,6 +9,11 @@ Revision history for Module-Patch
           add/replace/delete (aside from wrap). When using the latter, first
           argument given to wrapper code is not $orig (original subroutine) but
           $ctx (context hash, original subroutine is in $ctx->{orig}).
+
+        [ENHANCEMENTS]
+
+        - Implement add/replace/add_or_replace/delete (courtesy of
+          Alt::Monkey::Patch::SHARYANTO).
 
 
 0.09    2012-07-17 (SHARYANTO)
