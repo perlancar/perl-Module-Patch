@@ -140,7 +140,9 @@ sub patch_package {
         my @target_subs;
         my %tp = list_package_contents($target);
         for (keys %tp) {
-            if (reftype($tp{$_}) eq 'CODE' && !/^\*/) { push @target_subs, $_ }
+            if ((reftype($tp{$_}) // '') eq 'CODE' && !/^\*/) {
+                push @target_subs, $_;
+            }
         }
 
         my $i = 0;
