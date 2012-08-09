@@ -285,8 +285,8 @@ To create a patch module by subclassing Module::Patch:
 =head1 DESCRIPTION
 
 Module::Patch is basically a convenient way to define and bundle a set of
-patches. Actual patching is done by the nice L<Alt::Monkey::Patch::SHARYANTO>,
-which provides lexically scoped patching.
+patches. Actual patching is done by L<Alt::Monkey::Patch::SHARYANTO>, which
+provides lexically scoped patching.
 
 There are two ways to use this module:
 
