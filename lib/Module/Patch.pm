@@ -76,9 +76,9 @@ sub import {
         }
 
         my $target = $self;
-        $target =~ s/(?<=\w)::patch::\w+$//
+        $target =~ s/(?<=\w)::[Pp]atch::\w+$//
             or die "BUG: $self: Bad patch module name '$target', it should ".
-                "end with '::patch::something'";
+                "end with '::Patch::YourCategory'";
 
         unless (is_loaded($target)) {
             if ($load) {
@@ -246,7 +246,7 @@ To create a patch module by subclassing Module::Patch:
 
  # in your patch module
 
- package Some::Module::patch::your_category;
+ package Some::Module::Patch::YourCategory;
  use parent qw(Module::Patch);
 
  sub patch_data {
@@ -268,18 +268,18 @@ To create a patch module by subclassing Module::Patch:
 
  # using your patch module
 
- use Some::Module::patch::your_category
+ use Some::Module::Patch::YourCategory
      -force => 1, # optional, force patch even if target version does not match
      -config => {a=>10, b=>20}, # optional, set config value
  ;
 
  # accessing per-patch-module config data
 
- print $Some::Module::patch::your_category::config->{a}; # 10
- print $Some::Module::patch::your_category::config->{c}; # 3, default value
+ print $Some::Module::Patch::YourCategory::config->{a}; # 10
+ print $Some::Module::Patch::YourCategory::config->{c}; # 3, default value
 
  # unpatch, restore original subroutines
- no Some::Module::patch::your_category;
+ no Some::Module::Patch::YourCategory;
 
 
 =head1 DESCRIPTION
@@ -299,8 +299,10 @@ module that monkey-patches other module by adding/replacing/wrapping/deleting
 subroutines of target module) by subclassing Module::Patch and providing the
 patches_spec in patch_data() method.
 
-Patch module should be named I<Some::Module>::patch::I<your_category>. For
-example, L<HTTP::Daemon::patch::ipv6>.
+Patch module should be named I<Some::Module>::Patch::I<YourCategory>.
+I<YourCategory> should be a keyword or phrase (verb + obj) that describes what
+the patch does. For example, L<HTTP::Daemon::Patch::IPv6>,
+L<LWP::UserAgent::Patch::LogResponse>.
 
 =item * require/import it directly
 
@@ -371,8 +373,8 @@ L<Alt::Monkey::Patch::SHARYANTO>
 L<Pod::Weaver::Plugin::ModulePatch>
 
 Some examples of patch modules that use Module::Patch by subclassing it:
-L<Net::HTTP::Methods::patch::log_request>,
-L<LWP::UserAgent::patch::https_hard_timeout>.
+L<Net::HTTP::Methods::Patch::LogResponse>,
+L<LWP::UserAgent::Patch::HTTPSHardTimeout>.
 
 Some examples of modules that use Module::Patch directly:
 L<Log::Any::For::Class>.
