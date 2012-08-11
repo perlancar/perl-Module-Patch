@@ -1,6 +1,6 @@
 Revision history for Module-Patch
 
-0.12    2012-08-09 (SHARYANTO)
+0.12    2012-08-11 (SHARYANTO)
 
         Patch module should now be named Foo::Bar::Patch::YourCategory instead
         of Foo::Bar::patch::your_category (more Perlish casing). But the old
