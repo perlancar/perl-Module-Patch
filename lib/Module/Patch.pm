@@ -226,7 +226,7 @@ sub patch_package {
 
 To use Module::Patch directly:
 
- # patching DBI modules so that
+ # patching DBI modules so that calls are logged
 
  use Module::Patch qw(patch_package);
  use Log::Any '$log';
@@ -251,7 +251,7 @@ To create a patch module by subclassing Module::Patch:
 
  sub patch_data {
      return {
-         v => 2,
+         v => 3,
          patches => [...], # $patches_spec
          config => { # per-patch-module config
              a => {
