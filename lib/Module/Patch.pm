@@ -373,7 +373,7 @@ L<Alt::Monkey::Patch::SHARYANTO>
 L<Pod::Weaver::Plugin::ModulePatch>
 
 Some examples of patch modules that use Module::Patch by subclassing it:
-L<Net::HTTP::Methods::Patch::LogResponse>,
+L<Net::HTTP::Methods::Patch::LogRequest>,
 L<LWP::UserAgent::Patch::HTTPSHardTimeout>.
 
 Some examples of modules that use Module::Patch directly:
