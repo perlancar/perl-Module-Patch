@@ -8,7 +8,7 @@ use Log::Any '$log';
 use Carp;
 use Module::Load;
 use Module::Loaded;
-use Alt::Monkey::Patch::SHARYANTO qw();
+use Monkey::Patch::Action qw();
 use Scalar::Util qw(reftype);
 use SHARYANTO::Array::Util qw(match_array_or_regex);
 use SHARYANTO::Package::Util qw(list_package_contents package_exists);
@@ -209,7 +209,7 @@ sub patch_package {
             for my $s (@s) {
                 $log->tracef("Patching %s ...", $s);
                 $handles->{"$target\::$s"} =
-                    Alt::Monkey::Patch::SHARYANTO::patch_package(
+                    Monkey::Patch::Action::patch_package(
                         $target, $s, $act, $pspec->{code});
             }
 
@@ -285,8 +285,8 @@ To create a patch module by subclassing Module::Patch:
 =head1 DESCRIPTION
 
 Module::Patch is basically a convenient way to define and bundle a set of
-patches. Actual patching is done by L<Alt::Monkey::Patch::SHARYANTO>, which
-provides lexically scoped patching.
+patches. Actual patching is done by L<Monkey::Patch::Action>, which provides
+lexically scoped patching.
 
 There are two ways to use this module:
 
@@ -368,7 +368,7 @@ warn and skip patching.
 
 =head1 SEE ALSO
 
-L<Alt::Monkey::Patch::SHARYANTO>
+L<Monkey::Patch::Action>
 
 L<Pod::Weaver::Plugin::ModulePatch>
 
