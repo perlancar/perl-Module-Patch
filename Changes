@@ -1,5 +1,11 @@
 Revision history for Module-Patch
 
+0.14    2012-08-20 (SHARYANTO)
+
+        No functional changes. Rename dependency module from
+        Alt::Monkey::Patch::SHARYANTO to Monkey::Patch::Action.
+
+
 0.13    2012-08-20 (SHARYANTO)
 
         No functional changes. Update Synopsis [RT#79098].
