@@ -304,6 +304,9 @@ I<YourCategory> should be a keyword or phrase (verb + obj) that describes what
 the patch does. For example, L<HTTP::Daemon::Patch::IPv6>,
 L<LWP::UserAgent::Patch::LogResponse>.
 
+Patch module should be use()'d, or require()'d + import()'ed instead of just
+require()'d, because the patching is done in import().
+
 =item * require/import it directly
 
 Module::Patch provides B<patch_package> which is the actual routine to do the
