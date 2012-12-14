@@ -222,6 +222,8 @@ sub patch_package {
 1;
 # ABSTRACT: Patch package with a set of patches
 
+=for Pod::Coverage ^(unimport|patch_data)$
+
 =head1 SYNOPSIS
 
 To use Module::Patch directly:
