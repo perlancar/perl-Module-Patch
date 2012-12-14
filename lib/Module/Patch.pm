@@ -230,17 +230,20 @@ To use Module::Patch directly:
 
  use Module::Patch qw(patch_package);
  use Log::Any '$log';
- patch_package(['DBI', 'DBI::st', 'DBI::db'], [
+ my $handle = patch_package(['DBI', 'DBI::st', 'DBI::db'], [
      {action=>'wrap', mod_version=>':all', sub_name=>':public', code=>sub {
-         my $ctx      = shift;
-         my $orig_sub = shift;
+         my $ctx = shift;
+
          $log->tracef("Entering %s(%s) ...", $ctx->{orig_name}, \@_);
          my $res;
-         if (wantarray) { $res=[$orig_sub->(@_)] } else { $res=$orig_sub->(@_) }
+         if (wantarray) { $res=[$ctx->{orig}->(@_)] } else { $res=$ctx->{orig}->(@_) }
          $log->tracef("Returned from %s", $ctx->{orig_name});
          if (wantarray) { return @$res } else { return $res }
      }},
  ]);
+
+ # restore original
+ undef $handle;
 
 To create a patch module by subclassing Module::Patch:
 
