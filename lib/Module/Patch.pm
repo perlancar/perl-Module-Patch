@@ -81,7 +81,7 @@ sub import {
                 "end with '::Patch::YourCategory'";
 
         if (is_loaded($target)) {
-            if ($load) {
+            if ($load && ($opts{-warn_target_loaded} // 1)) {
                 carp "$target is loaded before ".__PACKAGE__.", this is not ".
                     "recommended since $target might export subs before ".
                         __PACKAGE__." gets the chance to patch them";
@@ -342,6 +342,12 @@ on caller package. %opts include:
 
 Load target modules. Set to 0 if package is already defined in other files and
 cannot be require()-ed.
+
+=item * -warn_target_loaded => BOOL (default 1)
+
+If set to false, do not warn if target modules are loaded before the patch
+module. By default, it warns to prevent users making the mistake of importing
+subroutines from target modules before they are patched.
 
 =item * -force => BOOL
 
