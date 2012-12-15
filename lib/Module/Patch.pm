@@ -80,7 +80,13 @@ sub import {
             or die "BUG: $self: Bad patch module name '$target', it should ".
                 "end with '::Patch::YourCategory'";
 
-        unless (is_loaded($target)) {
+        if (is_loaded($target)) {
+            if ($load) {
+                carp "$target is loaded before ".__PACKAGE__.", this is not ".
+                    "recommended since $target might export subs before ".
+                        __PACKAGE__." gets the chance to patch them";
+            }
+        } else {
             if ($load) {
                 load $target;
             } else {
@@ -343,7 +349,7 @@ Will be passed to patch_package's \%opts.
 
 =back
 
-=head2 patch_package($package, $patches_spec, \%opts)
+=head2 patch_package($package, $patches_spec, \%opts) => HANDLE
 
 Patch target package C<$package> with a set of patches.
 
@@ -370,6 +376,51 @@ Known options:
 
 Force patching even if target module version does not match. The default is to
 warn and skip patching.
+
+=back
+
+
+=head1 FAQ
+
+=head2 This module does not work! The target module does not get patched!
+
+It probably does. Some of the common mistakes are:
+
+=over
+
+=item * Not storing the handle
+
+You do this:
+
+ patch_package(...);
+
+instead of this:
+
+ my $handle = patch_package(...);
+
+Since the handle is used to revert the patch, if you do not store C<$handle>,
+you are basically patching and immediately reverting the patch.
+
+=item * Importing before patching
+
+If C<Target::Module> exports symbols, and you patch one of the default exports,
+the users need to patch before importing. Otherwise he/she will get the
+unpatched version. For example, this won't work:
+
+ use Target::Module; # by default export foo
+ use Target::Module::Patch::Foo; # patches foo
+
+ foo(); # user gets the unpatched version
+
+While this does:
+
+ use Target::Module::Patch::Foo; # patches foo
+ use Target::Module; # by default export foo
+
+ foo(); # user gets the unpatched version
+
+Since 0.16, Module::Patch already warns this (unless C<-load_target> is set to
+false).
 
 =back
 
