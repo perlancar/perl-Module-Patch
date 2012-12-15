@@ -423,10 +423,10 @@ While this does:
  use Target::Module::Patch::Foo; # patches foo
  use Target::Module; # by default export foo
 
- foo(); # user gets the unpatched version
+ foo(); # user gets the patched version
 
-Since 0.16, Module::Patch already warns this (unless C<-load_target> is set to
-false).
+Since 0.16, Module::Patch already warns this (unless C<-load_target> or
+C<-warn_target_loaded> is set to false).
 
 =back
 
