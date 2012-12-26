@@ -308,7 +308,7 @@ There are two ways to use this module:
 This is used for convenient bundling of patches. You create a I<patch module> (a
 module that monkey-patches other module by adding/replacing/wrapping/deleting
 subroutines of target module) by subclassing Module::Patch and providing the
-patches_spec in patch_data() method.
+patches specification in patch_data() method.
 
 Patch module should be named I<Some::Module>::Patch::I<YourCategory>.
 I<YourCategory> should be a keyword or phrase (verb + obj) that describes what
@@ -359,8 +359,8 @@ Will be passed to patch_package's \%opts.
 
 Patch target package C<$package> with a set of patches.
 
-C<$patches_spec> is an arrayref containing a series of patch specification.
-Patch specification is a hashref containing these keys: C<action> (string,
+C<$patches_spec> is an arrayref containing a series of patches specifications.
+Each patch specification is a hashref containing these keys: C<action> (string,
 required; either 'wrap', 'add', 'replace', 'add_or_replace', 'delete'),
 C<mod_version> (string/regex or array of string/regex, can be ':all' to mean all
 versions; optional; defaults to ':all'). C<sub_name> (string/regex or array of
@@ -369,10 +369,8 @@ string/regex, subroutine(s) to patch, can be ':all' to mean all subroutine,
 ':private' to mean all private), C<code> (coderef, not required if C<action> is
 'delete').
 
-Die if there is conflict with other patch modules (patchsets), for example if
-target module has been patched 'delete' and another patch wants to 'wrap' it.
-
-NOTE: conflict checking with other patchsets not yet implemented.
+Die if there is conflict with other patch modules, for example if target module
+has been patched 'delete' and another patch wants to 'wrap' it.
 
 Known options:
 
