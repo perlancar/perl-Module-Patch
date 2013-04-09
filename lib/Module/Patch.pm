@@ -48,6 +48,12 @@ sub import {
             delete $opts{-force};
         }
         $force //= 0;
+        my $warn;
+        if (exists $opts{-warn_target_loaded}) {
+            $warn = $opts{-warn_target_loaded};
+            delete $opts{-warn_target_loaded};
+        }
+        $warn //= 1;
 
         # patch already applied, ignore
         return if ${"$self\::handles"}; #W
@@ -81,7 +87,7 @@ sub import {
                 "end with '::Patch::YourCategory'";
 
         if (is_loaded($target)) {
-            if ($load && ($opts{-warn_target_loaded} // 1)) {
+            if ($load && $warn) {
                 carp "$target is loaded before ".__PACKAGE__.", this is not ".
                     "recommended since $target might export subs before ".
                         __PACKAGE__." gets the chance to patch them";
