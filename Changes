@@ -1,5 +1,14 @@
 Revision history for Module-Patch
 
+0.17    2013-04-10 (SHARYANTO)
+
+        No functional changes.
+
+        [BUG FIXES]
+
+        - Option -warn_target_loaded was not passable.
+
+
 0.16    2012-12-15 (SHARYANTO)
 
         Now warns if target module is loaded before us (unless -load_target or
