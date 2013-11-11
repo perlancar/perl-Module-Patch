@@ -17,7 +17,7 @@ use SHARYANTO::Package::Util qw(list_package_contents package_exists);
 
 our @EXPORT_OK = qw(patch_package);
 
-#our %applied_patches; # for conflict checking
+my%loaded_by_us;
 
 sub import {
     no strict 'refs';
@@ -56,7 +56,7 @@ sub import {
         $warn //= 1;
 
         # patch already applied, ignore
-        return if ${"$self\::handles"}; #W
+        return if ${"$self\::handles"};
 
         my $pdata = $self->patch_data or
             die "BUG: $self: No patch data supplied";
@@ -86,7 +86,7 @@ sub import {
             or die "BUG: $self: Bad patch module name '$target', it should ".
                 "end with '::Patch::YourCategory'";
 
-        if (is_loaded($target)) {
+        if (is_loaded($target) && !$loaded_by_us{$target}) {
             if ($load && $warn) {
                 carp "$target is loaded before ".__PACKAGE__.", this is not ".
                     "recommended since $target might export subs before ".
@@ -95,6 +95,7 @@ sub import {
         } else {
             if ($load) {
                 load $target;
+                $loaded_by_us{$target}++;
             } else {
                 croak "FATAL: $self: $target is not loaded, please ".
                     "'use $target' before patching";
