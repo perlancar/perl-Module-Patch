@@ -1,8 +1,16 @@
 Revision history for Module-Patch
 
+0.18    2013-11-11 (SHARYANTO)
+
+        - Do not warn if target module was already loaded by the time a patch
+          module is loaded, but the target module was loaded by another patch
+          module. This can happen if we patch a module with two or more patch
+          modules.
+
+
 0.17    2013-04-10 (SHARYANTO)
 
-        No functional changes.
+        - No functional changes.
 
         [BUG FIXES]
 
@@ -11,37 +19,37 @@ Revision history for Module-Patch
 
 0.16    2012-12-15 (SHARYANTO)
 
-        Now warns if target module is loaded before us (unless -load_target or
-        the new -warn_target_loaded option is set to false).
+        - Now warns if target module is loaded before us (unless -load_target or
+          the new -warn_target_loaded option is set to false).
 
 
 0.15    2012-12-14 (SHARYANTO)
 
-        No functional changes. Update outdated Synopsis.
+        - No functional changes. Update outdated Synopsis.
 
 
 0.14    2012-08-20 (SHARYANTO)
 
-        No functional changes. Rename dependency module from
-        Alt::Monkey::Patch::SHARYANTO to Monkey::Patch::Action.
+        - No functional changes. Rename dependency module from
+          Alt::Monkey::Patch::SHARYANTO to Monkey::Patch::Action.
 
 
 0.13    2012-08-20 (SHARYANTO)
 
-        No functional changes. Update Synopsis [RT#79098].
+        - No functional changes. Update Synopsis [RT#79098].
 
 
 0.12    2012-08-11 (SHARYANTO)
 
-        Patch module should now be named Foo::Bar::Patch::YourCategory instead
-        of Foo::Bar::patch::your_category (more Perlish casing). But the old
-        ::patch:: name is still supported.
+        - Patch module should now be named Foo::Bar::Patch::YourCategory instead
+          of Foo::Bar::patch::your_category (more Perlish casing). But the old
+          ::patch:: name is still supported.
 
 
 0.11    2012-08-03 (SHARYANTO)
 
-        No functional changes. Remove Perl undef warning and tweak error
-        message.
+        - No functional changes. Remove Perl undef warning and tweak error
+          message.
 
 
 0.10    2012-08-03 (SHARYANTO)
@@ -143,4 +151,4 @@ Revision history for Module-Patch
 
 0.01    2012-04-03 (SHARYANTO)
 
-        First release. No tests yet.
+        - First release. No tests yet.
