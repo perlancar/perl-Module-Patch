@@ -1,5 +1,13 @@
 Revision history for Module-Patch
 
+0.20    2014-12-05 (PERLANCAR)
+
+	- No functional changes.
+
+	- Use the new renamed module SHARYANTO::Package::Util ->
+	  Package::MoreUtil.
+
+
 0.19    2014-05-26 (SHARYANTO)
 
         - No functional changes.
