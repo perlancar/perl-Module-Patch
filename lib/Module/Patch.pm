@@ -1,5 +1,8 @@
 package Module::Patch;
 
+# DATE
+# VERSION
+
 use 5.010001;
 use strict;
 use warnings;
@@ -12,9 +15,7 @@ use Module::Loaded;
 use Monkey::Patch::Action qw();
 use Scalar::Util qw(reftype);
 use SHARYANTO::Array::Util qw(match_array_or_regex);
-use SHARYANTO::Package::Util qw(list_package_contents package_exists);
-
-# VERSION
+use Package::MoreUtil qw(list_package_contents package_exists);
 
 our @EXPORT_OK = qw(patch_package);
 
