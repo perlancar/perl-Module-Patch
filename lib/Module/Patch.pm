@@ -13,7 +13,6 @@ use Carp;
 use Module::Load;
 use Module::Loaded;
 use Monkey::Patch::Action qw();
-use Scalar::Util qw(reftype);
 use SHARYANTO::Array::Util qw(match_array_or_regex);
 use Package::MoreUtil qw(list_package_contents package_exists);
 
@@ -157,7 +156,7 @@ sub patch_package {
         my @target_subs;
         my %tp = list_package_contents($target);
         for (keys %tp) {
-            if ((reftype($tp{$_}) // '') eq 'CODE' && !/^\*/) {
+            if (ref($tp{$_}) eq 'CODE' && !/^\*/) {
                 push @target_subs, $_;
             }
         }
