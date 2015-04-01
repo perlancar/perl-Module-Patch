@@ -1,5 +1,10 @@
 Revision history for Module-Patch
 
+0.21    2015-04-01 (PERLANCAR)
+
+	- [ux] Show patch module name in error message.
+
+
 0.20    2014-12-05 (PERLANCAR)
 
 	- No functional changes.
