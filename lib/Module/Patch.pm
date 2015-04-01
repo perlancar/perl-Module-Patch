@@ -70,7 +70,7 @@ sub import {
             } elsif ($v == 2) {
                 $mpv = "0.07-0.09";
             }
-            croak "$self ".(${$self."::VERSION"} // "?").
+            croak "$self ".( ${"$self\::VERSION" } // "?" ).
                 " requires Module::Patch $mpv (patch_data format v=$v),".
                     " this is Module::Patch ".($Module::Patch::VERSION // '?').
                         " (v=$curv), please install an older version of ".
@@ -119,7 +119,8 @@ sub import {
         }
 
         ${"$self\::handles"} = patch_package(
-            $target, $pdata->{patches}, {force=>$force});
+            $target, $pdata->{patches},
+            {force=>$force, patch_module=>ref($self) || $self});
     }
 }
 
@@ -165,14 +166,16 @@ sub patch_package {
       PATCH:
         for my $pspec (@$patches_spec) {
             my $act = $pspec->{action};
-            $act or die "BUG: patch[$i]: no action supplied";
+            my $errp = ($opts->{patch_module} ? "$opts->{patch_module}: ":"").
+                "patch[$i]"; # error prefix
+            $act or die "BUG: $errp: no action supplied";
             $act =~ /\A(wrap|add|replace|add_or_replace|delete)\z/ or die
-                "BUG: patch[$i]: action '$pspec->{action}' unknown";
+                "BUG: $errp: action '$pspec->{action}' unknown";
             if ($act eq 'delete') {
-                $pspec->{code} and die "BUG: patch[$i]: for action 'delete', ".
+                $pspec->{code} and die "BUG: $errp: for action 'delete', ".
                     "code must not be supplied";
             } else {
-                $pspec->{code} or die "BUG: patch[$i]: code not supplied";
+                $pspec->{code} or die "BUG: $errp: code not supplied";
             }
 
             my $sub_names = ref($pspec->{sub_name}) eq 'ARRAY' ?
@@ -181,7 +184,7 @@ sub patch_package {
                 $_ = qr/.*/    if $_ eq ':all';
                 $_ = qr/^_/    if $_ eq ':private';
                 $_ = qr/^[^_]/ if $_ eq ':public';
-                die "BUG: patch[$i]: unknown tag in sub_name $_" if /^:/;
+                die "BUG: $errp: unknown tag in sub_name $_" if /^:/;
             }
 
             my @s;
@@ -205,14 +208,14 @@ sub patch_package {
                     [@$mod_versions] : [$mod_versions];
                 for (@$mod_versions) {
                     $_ = qr/.*/    if $_ eq ':all';
-                    die "BUG: patch[$i]: unknown tag in mod_version $_"
+                    die "BUG: $errp: unknown tag in mod_version $_"
                         if /^:/;
                 }
 
                 my $ver_match=match_array_or_regex(
                     $target_version, $mod_versions);
                 unless ($ver_match) {
-                    carp "patch[$i]: Target module version $target_version ".
+                    carp "$errp: Target module version $target_version ".
                         "does not match [".join(", ", @$mod_versions)."], ".
                             ($opts->{force} ?
                                  "patching anyway (force)":"skipped"). ".";
