@@ -1,5 +1,12 @@
 Revision history for Module-Patch
 
+0.22    2015-08-17 (PERLANCAR)
+
+	- No functional changes.
+
+	- Switch from Log::Any to Log::Any::IfLOG.
+
+
 0.21    2015-04-01 (PERLANCAR)
 
 	- [ux] Show patch module name in error message.
