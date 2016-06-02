@@ -1,5 +1,11 @@
 Revision history for Module-Patch
 
+0.24    2016-06-03 (PERLANCAR)
+
+        - Introduce patch data properties 'before_patch', 'after_patch',
+          'before_unpatch', 'after_unpatch'.
+
+
 0.23    2016-06-03 (PERLANCAR)
 
         - Introduce patch data property 'after_read_config'.

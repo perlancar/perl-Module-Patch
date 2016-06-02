@@ -143,8 +143,10 @@ sub unimport {
     my $self = shift;
 
     if ($self eq __PACKAGE__) {
-        # do nothing
+        # we are not subclassed, do nothing
     } else {
+        my $pdata = $self->patch_data or
+            die "BUG: $self: No patch data supplied";
 
         if ($pdata->{before_unpatch}) {
             $pdata->{before_unpatch}->();
@@ -431,7 +433,7 @@ Must be 3 (current version).
 
 =item * patches => array
 
-Will be passed to L<Monkey::Patch::Action>'s C<patch_package()>.
+Will be passed to C<patch_package()>.
 
 =item * config => hash
 
