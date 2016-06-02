@@ -122,9 +122,18 @@ sub import {
             $pdata->{after_read_config}->();
         }
 
+        if ($pdata->{before_patch}) {
+            $pdata->{before_patch}->();
+        }
+
         ${"$self\::handles"} = patch_package(
             $target, $pdata->{patches},
             {force=>$force, patch_module=>ref($self) || $self});
+
+        if ($pdata->{after_patch}) {
+            $pdata->{after_patch}->();
+        }
+
     }
 }
 
@@ -136,10 +145,20 @@ sub unimport {
     if ($self eq __PACKAGE__) {
         # do nothing
     } else {
+
+        if ($pdata->{before_unpatch}) {
+            $pdata->{before_unpatch}->();
+        }
+
         my $handles = ${"$self\::handles"};
         $log->tracef("Unpatching %s ...", [keys %$handles]);
         undef ${"$self\::handles"};
         # do we need to undef ${"$self\::config"}?, i'm thinking not really
+
+        if ($pdata->{after_unpatch}) {
+            $pdata->{after_unpatch}->();
+        }
+
     }
 }
 
@@ -423,6 +442,14 @@ C<default> (default value).
 =item * after_read_config => coderef
 
 A hook to run after patch module is imported and configuration has been read.
+
+=item * before_patch => coderef
+
+=item * after_patch => coderef
+
+=item * before_unpatch => coderef
+
+=item * after_unpatch => coderef
 
 =back
 
