@@ -118,8 +118,8 @@ sub import {
             croak "$self: Unknown option(s): ".join(", ", keys %opts);
         }
 
-        if ($opts{after_read_config}) {
-            $opts{after_read_config}->();
+        if ($pdata->{after_read_config}) {
+            $pdata->{after_read_config}->();
         }
 
         ${"$self\::handles"} = patch_package(
