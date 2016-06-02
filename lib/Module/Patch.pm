@@ -118,6 +118,10 @@ sub import {
             croak "$self: Unknown option(s): ".join(", ", keys %opts);
         }
 
+        if ($opts{after_read_config}) {
+            $opts{after_read_config}->();
+        }
+
         ${"$self\::handles"} = patch_package(
             $target, $pdata->{patches},
             {force=>$force, patch_module=>ref($self) || $self});
@@ -391,6 +395,34 @@ Known options:
 
 Force patching even if target module version does not match. The default is to
 warn and skip patching.
+
+=back
+
+
+=head1 PATCH DATA SPECIFICATION
+
+Patch data must be stored in C<patch_data()> subroutine. It must be a L<DefHash>
+(i.e. a regular Perl hash) with the following known properties:
+
+=over
+
+=item * v => int
+
+Must be 3 (current version).
+
+=item * patches => array
+
+Will be passed to L<Monkey::Patch::Action>'s C<patch_package()>.
+
+=item * config => hash
+
+A hash of name and config specifications. Config specification is another
+DefHash and can contain the following properties: C<schema> (a L<Sah> schema),
+C<default> (default value).
+
+=item * after_read_config => coderef
+
+A hook to run after patch module is imported and configuration has been read.
 
 =back
 
