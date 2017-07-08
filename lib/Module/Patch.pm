@@ -6,7 +6,7 @@ package Module::Patch;
 use 5.010001;
 use strict 'subs', 'vars';
 use warnings;
-#use Log::Any::IfLOG '$log';
+#use Log::ger;
 
 use Monkey::Patch::Action qw();
 use Package::MoreUtil qw(list_package_contents package_exists);
@@ -155,7 +155,7 @@ sub unimport {
         }
 
         my $handles = ${"$self\::handles"};
-        #$log->tracef("Unpatching %s ...", [keys %$handles]);
+        #log_trace("Unpatching %s ...", [keys %$handles]);
         undef ${"$self\::handles"};
         # do we need to undef ${"$self\::config"}?, i'm thinking not really
 
@@ -251,7 +251,7 @@ sub patch_package {
             }
 
             for my $s (@s) {
-                #$log->tracef("Patching %s ...", $s);
+                #log_trace("Patching %s ...", $s);
                 $handles->{"$target\::$s"} =
                     Monkey::Patch::Action::patch_package(
                         $target, $s, $act, $pspec->{code});
@@ -275,15 +275,15 @@ To use Module::Patch directly:
  # patching DBI modules so that calls are logged
 
  use Module::Patch qw(patch_package);
- use Log::Any '$log';
+ use Log::ger;
  my $handle = patch_package(['DBI', 'DBI::st', 'DBI::db'], [
      {action=>'wrap', mod_version=>':all', sub_name=>':public', code=>sub {
          my $ctx = shift;
 
-         $log->tracef("Entering %s(%s) ...", $ctx->{orig_name}, \@_);
+         log_trace("Entering %s(%s) ...", $ctx->{orig_name}, \@_);
          my $res;
          if (wantarray) { $res=[$ctx->{orig}->(@_)] } else { $res=$ctx->{orig}->(@_) }
-         $log->tracef("Returned from %s", $ctx->{orig_name});
+         log_trace("Returned from %s", $ctx->{orig_name});
          if (wantarray) { return @$res } else { return $res }
      }},
  ]);
