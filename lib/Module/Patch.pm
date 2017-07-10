@@ -266,7 +266,7 @@ sub patch_package {
 1;
 # ABSTRACT: Patch package with a set of patches
 
-=for Pod::Coverage ^(unimport|patch_data)$
+=for Pod::Coverage ^(unimport|patch_data|is_loaded)$
 
 =head1 SYNOPSIS
 
