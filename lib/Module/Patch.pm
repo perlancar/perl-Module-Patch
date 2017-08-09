@@ -106,6 +106,7 @@ sub import {
         }
 
         # read patch module's configs
+        no warnings 'once';
         my $pcdata = $pdata->{config} // {};
         my $config = \%{"$self\::config"};
         while (my ($k, $v) = each %$pcdata) {
