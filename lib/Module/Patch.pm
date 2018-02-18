@@ -88,11 +88,14 @@ sub import {
             or die "BUG: $self: Bad patch module name '$target', it should ".
                 "end with '::Patch::YourCategory'";
 
-        if (is_loaded($target) && !$loaded_by_us{$target}) {
-            if ($load && $warn) {
-                warn "$target is loaded before ".__PACKAGE__.", this is not ".
-                    "recommended since $target might export subs before ".
-                    __PACKAGE__." gets the chance to patch them";
+        if (is_loaded($target)) {
+            if (!$loaded_by_us{$target}) {
+                if ($load && $warn) {
+                    warn "$target is loaded before ".__PACKAGE__.", this is ".
+                        "not recommended since $target might export subs ".
+                        "before " . __PACKAGE__." gets the chance to patch " .
+                        "them";
+                }
             }
         } else {
             if ($load) {
@@ -100,8 +103,11 @@ sub import {
                 die if $@;
                 $loaded_by_us{$target}++;
             } else {
-                die "FATAL: $self: $target is not loaded, please ".
-                    "'use $target' before patching";
+                if ($warn) {
+                    warn "$target does not exist and we are told not to load ".
+                        "it, skipped patching";
+                }
+                return;
             }
         }
 
