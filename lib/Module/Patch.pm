@@ -6,7 +6,7 @@ package Module::Patch;
 use 5.010001;
 use strict 'subs', 'vars';
 use warnings;
-#use Log::ger;
+use Log::ger;
 
 use Monkey::Patch::Action qw();
 use Package::MoreUtil qw(list_package_contents package_exists);
@@ -137,6 +137,7 @@ sub import {
             $pdata->{before_patch}->();
         }
 
+        log_trace "Module::Patch: patching $target with $self ...";
         ${"$self\::handles"} = patch_package(
             $target, $pdata->{patches},
             {force=>$force, patch_module=>ref($self) || $self});
@@ -164,7 +165,7 @@ sub unimport {
         }
 
         my $handles = ${"$self\::handles"};
-        #log_trace("Unpatching %s ...", [keys %$handles]);
+        log_trace "Module::Patch: Unpatching $self ...";
         undef ${"$self\::handles"};
         # do we need to undef ${"$self\::config"}?, i'm thinking not really
 
