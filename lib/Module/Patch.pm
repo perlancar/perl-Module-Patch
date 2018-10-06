@@ -116,6 +116,8 @@ sub import {
         my $pcdata = $pdata->{config} // {};
         my $config = \%{"$self\::config"};
         while (my ($k, $v) = each %$pcdata) {
+            die "Invalid configuration defined by $self\::patch_data(): ".
+                "$k: must start with dash" unless $k =~ /\A-/;
             $config->{$k} = $v->{default};
             if (exists $opts{$k}) {
                 $config->{$k} = $opts{$k};
