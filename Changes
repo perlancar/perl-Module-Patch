@@ -1,3 +1,10 @@
+0.271   2018-10-06 (PERLANCAR)
+
+	- Require that config starts with dash (minus).
+
+	- [doc] Update documentation.
+
+
 0.270   2018-02-18 (PERLANCAR)
 
 	- [Bugfix] When -load_target=0 and target is not loaded, don't die
