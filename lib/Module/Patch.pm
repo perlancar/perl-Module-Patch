@@ -312,13 +312,16 @@ To create a patch module by subclassing Module::Patch:
          v => 3,
          patches => [...], # $patches_spec
          config => { # per-patch-module config
-             a => {
-                 default => 1,
+             -foo => {                   # config name must start with a dash
+                 summary => 'blah blah',
+                 schema  => 'str*',      # Sah schema
+                 default => 'val',       # default value
              },
-             b => {},
-             c => {
-                 default => 3,
+             -bar => {
+                 schema  => 'int*',
+                 default => 2,
              },
+             ...
          },
      };
  }
@@ -327,14 +330,14 @@ To create a patch module by subclassing Module::Patch:
  # using your patch module
 
  use Some::Module::Patch::YourCategory
-     -force => 1, # optional, force patch even if target version does not match
-     -config => {a=>10, b=>20}, # optional, set config value
+     -force => 1,    # optional, force patch even if target version does not match
+     -foo => 'val2', # optional, specify configuration
  ;
 
  # accessing per-patch-module config data
 
- print $Some::Module::Patch::YourCategory::config->{a}; # 10
- print $Some::Module::Patch::YourCategory::config->{c}; # 3, default value
+ print $Some::Module::Patch::YourCategory::config{-foo}; # => 'val2'
+ print $Some::Module::Patch::YourCategory::config{-bar}; # 2, default value
 
  # unpatch, restore original subroutines
  no Some::Module::Patch::YourCategory;
