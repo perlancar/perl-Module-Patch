@@ -280,68 +280,133 @@ sub patch_package {
 
 =head1 SYNOPSIS
 
-To use Module::Patch directly:
+In this example, we're patching L<HTTP::Tiny> to add automatic retrying.
+L<Module::Patch> can be used in two ways: either directly or via creating your
+own patch module based on Module::Patch.
 
- # patching DBI modules so that calls are logged
+=head2 Using Module::Patch directly
 
  use Module::Patch qw(patch_package);
  use Log::ger;
- my $handle = patch_package(['DBI', 'DBI::st', 'DBI::db'], [
-     {action=>'wrap', mod_version=>':all', sub_name=>':public', code=>sub {
-         my $ctx = shift;
+ my $handle = patch_package('HTTP::Tiny', [
+     {
+         action      => 'wrap',
+         mod_version => qr/^0\.*/,
+         sub_name    => 'request',
+         code        => sub {
+             my $ctx = shift;
+             my $orig = $ctx->{orig};
 
-         log_trace("Entering %s(%s) ...", $ctx->{orig_name}, \@_);
-         my $res;
-         if (wantarray) { $res=[$ctx->{orig}->(@_)] } else { $res=$ctx->{orig}->(@_) }
-         log_trace("Returned from %s", $ctx->{orig_name});
-         if (wantarray) { return @$res } else { return $res }
-     }},
+             my ($self, $method, $url) = @_;
+
+             my $retries = 0;
+             my $res;
+             while (1) {
+                 $res = $orig->(@_);
+                 return $res if $res->{status} !~ /\A[5]/; # only retry 5xx responses
+                 last if $retries >= $config{-retries};
+                 $retries++;
+                 log_trace "Failed requesting $url ($res->{status} - $res->{reason}), retrying" .
+                     ($config{-delay} ? " in $config{-delay} second(s)" : "") .
+                     " ($retries of $config{-retries}) ...";
+                 sleep $config{-delay};
+             }
+             $res;
+         };
+     },
  ]);
 
- # restore original
+ # do stuffs with HTTP::Tiny
+ my $res = HTTP::Tiny->new->request(...);
+ ...
+
+ # unpatch, restore original subroutines/methods
  undef $handle;
 
-To create a patch module by subclassing Module::Patch:
+=head2 Creating patch module by subclassing Module::Patch
 
- # in your patch module
+In your patch module F<lib/HTTP/Tiny/Patch/Retry.pm>:
 
- package Some::Module::Patch::YourCategory;
+ package HTTP::Tiny::Patch::Retry;
+
  use parent qw(Module::Patch);
+ use Log::ger;
+
+ our %config;
 
  sub patch_data {
      return {
          v => 3,
-         patches => [...], # $patches_spec
-         config => { # per-patch-module config
-             -foo => {                   # config name must start with a dash
-                 summary => 'blah blah',
-                 schema  => 'str*',      # Sah schema
-                 default => 'val',       # default value
-             },
-             -bar => {
-                 schema  => 'int*',
+         config => {
+             -delay => {
+                 summary => 'Number of seconds to wait between retries',
+                 schema  => 'nonnegint*',
                  default => 2,
              },
-             ...
+             -retries => {
+                 summary => 'Maximum number of retries to perform consecutively on a request (0=disable retry)',
+                 schema  => 'nonnegint*',
+                 default => 3,
+             },
          },
+         patches => [
+             {
+                 action      => 'wrap',
+                 mod_version => qr/^0\.*/,
+                 sub_name    => 'request',
+                 code        => sub {
+                     my $ctx = shift;
+                     my $orig = $ctx->{orig};
+
+                     my ($self, $method, $url) = @_;
+
+                     my $retries = 0;
+                     my $res;
+                     while (1) {
+                         $res = $orig->(@_);
+                         return $res if $res->{status} !~ /\A[5]/; # only retry 5xx responses
+                         last if $retries >= $config{-retries};
+                         $retries++;
+                         log_trace "Failed requesting $url ($res->{status} - $res->{reason}), retrying" .
+                             ($config{-delay} ? " in $config{-delay} second(s)" : "") .
+                             " ($retries of $config{-retries}) ...";
+                         sleep $config{-delay};
+                     }
+                     $res;
+                 };
+             },
+         ],
      };
  }
  1;
 
- # using your patch module
+Using your patch module in Perl:
 
- use Some::Module::Patch::YourCategory
-     -force => 1,    # optional, force patch even if target version does not match
-     -foo => 'val2', # optional, specify configuration
+ use HTTP::Tiny::Patch::Retry
+     -retries => 4,  # optional, default is 3 as per configuration
+     -delay   => 5,  # optional, default is 2 as per configuration
  ;
 
- # accessing per-patch-module config data
+ # do stuffs with HTTP::Tiny
+ my $res = HTTP::Tiny->new->request(...);
 
- print $Some::Module::Patch::YourCategory::config{-foo}; # => 'val2'
- print $Some::Module::Patch::YourCategory::config{-bar}; # 2, default value
+ # unpatch, restore original subroutines/methods in target module (HTTP::Tiny)
+ HTTP::Tiny::Patch::Retry->unimport;
 
- # unpatch, restore original subroutines
- no Some::Module::Patch::YourCategory;
+To patch locally:
+
+ use HTTP::Tiny::Patch::Retry ();
+
+ sub get_data {
+     HTTP::Tiny::Patch::Retry->import;
+     my $res = HTTP::TIny->new->request(...);
+     HTTP::Tiny::Patch::Retry->unimport;
+     $res;
+ }
+
+Using your patch module on the command-line:
+
+ % perl -MHTTP::Tiny::Patch::Retry -E'my $res = HTTP::Tiny->new->request(...); ...'
 
 
 =head1 DESCRIPTION
@@ -379,7 +444,7 @@ patching.
 
 =head1 FUNCTIONS
 
-=head2 import()
+=head2 import
 
 If imported directly, will export @exports as arguments and export requested
 symbols.
@@ -406,7 +471,11 @@ Will be passed to patch_package's \%opts.
 
 =back
 
-=head2 patch_package($package, $patches_spec, \%opts) => HANDLE
+=head2 patch_package
+
+Usage:
+
+ my $handle = patch_package($package, $patches_spec, \%opts);
 
 Patch target package C<$package> with a set of patches.
 
@@ -473,6 +542,20 @@ A hook to run after patch module is imported and configuration has been read.
 
 =head1 FAQ
 
+=head2 Why patch? Why not subclass the target module?
+
+Sometimes the target module is not easily subclassable or at all. But even if
+the target module is subclassable, all client code must explicitly use the
+subclass. Patching allows us to modify behavior of a target module without
+changing any client code that use that module.
+
+=head2 Why create a patch module? Why not submit patches to the module's author?
+
+Not all patches are potentials for inclusion into the upstream (target module).
+But even if a patch is, creating and releasing a patch module can get you
+something working sooner (while you wait for the original author to respond to
+your patch, if ever).
+
 =head2 This module does not work! The target module does not get patched!
 
 It probably does. Some of the common mistakes are:
@@ -524,9 +607,10 @@ L<Pod::Weaver::Plugin::ModulePatch>
 
 Some examples of patch modules that use Module::Patch by subclassing it:
 L<Net::HTTP::Methods::Patch::LogRequest>,
-L<LWP::UserAgent::Patch::HTTPSHardTimeout>.
+L<LWP::UserAgent::Patch::HTTPSHardTimeout>, L<HTTP::Tiny::Patch::Cache>,
+L<HTTP::Tiny::Patch::Retry>.
 
 Some examples of modules that use Module::Patch directly:
-L<Log::Any::For::Class>.
+L<Log::ger::For::Class>.
 
 =cut
