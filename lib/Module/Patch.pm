@@ -191,13 +191,7 @@ sub patch_package {
         die "FATAL: Target module '$target' not loaded"
             unless package_exists($target);
         my $target_version = ${"$target\::VERSION"};
-        my @target_subs;
-        my %tp = list_package_contents($target);
-        for (keys %tp) {
-            if (ref($tp{$_}) eq 'CODE' && !/^\*/) {
-                push @target_subs, $_;
-            }
-        }
+        my $target_subs;
 
         my $i = 0;
       PATCH:
@@ -227,7 +221,16 @@ sub patch_package {
             my @s;
             for my $sub_name (@$sub_names) {
                 if (ref($sub_name) eq 'Regexp') {
-                    for (@target_subs) {
+                    unless ($target_subs) {
+                        $target_subs = [];
+                        my %tp = list_package_contents($target);
+                        for (keys %tp) {
+                            if (ref($tp{$_}) eq 'CODE' && !/^\*/) {
+                                push @$target_subs, $_;
+                            }
+                        }
+                    }
+                    for (@$target_subs) {
                         push @s, $_ if $_ !~~ @s && $_ =~ $sub_name;
                     }
                 } else {
