@@ -60,7 +60,11 @@ sub import {
         # patch already applied, ignore
         return if ${"$self\::handles"};
 
-        my $pdata = $self->patch_data or
+        unless (${"$self\::patch_data_cached"}) {
+            ${"$self\::patch_data_cached"} = $self->patch_data;
+        }
+
+        my $pdata = ${"$self\::patch_data_cached"} or
             die "BUG: $self: No patch data supplied";
         my $v = $pdata->{v} // 1;
         my $curv = 3;
@@ -150,14 +154,12 @@ sub import {
 }
 
 sub unimport {
-    no strict 'refs';
-
     my $self = shift;
 
     if ($self eq __PACKAGE__) {
         # we are not subclassed, do nothing
     } else {
-        my $pdata = $self->patch_data or
+        my $pdata = ${"$self\::patch_data_cached"} or
             die "BUG: $self: No patch data supplied";
 
         if ($pdata->{before_unpatch}) {
@@ -181,8 +183,6 @@ sub patch_data {
 }
 
 sub patch_package {
-    no strict 'refs';
-
     my ($package0, $patches_spec, $opts) = @_;
     $opts //= {};
 
