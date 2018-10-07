@@ -1,3 +1,11 @@
+0.274   2018-10-07 (PERLANCAR)
+
+	- [optimize] Memoize patch_data().
+
+	- [optimize] Avoid calling list_package_contents() when
+	  unnecessary.
+
+
 0.273   2018-10-07 (PERLANCAR)
 
 	- No functional changes.
