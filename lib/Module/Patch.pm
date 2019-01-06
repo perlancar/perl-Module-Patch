@@ -9,7 +9,8 @@ use warnings;
 use Log::ger;
 
 use Monkey::Patch::Action qw();
-use Package::MoreUtil qw(list_package_contents package_exists);
+use Package::Stash;
+use Package::Util::Lite qw(package_exists);
 
 our @EXPORT_OK = qw(patch_package);
 
@@ -222,13 +223,7 @@ sub patch_package {
             for my $sub_name (@$sub_names) {
                 if (ref($sub_name) eq 'Regexp') {
                     unless ($target_subs) {
-                        $target_subs = [];
-                        my %tp = list_package_contents($target);
-                        for (keys %tp) {
-                            if (ref($tp{$_}) eq 'CODE' && !/^\*/) {
-                                push @$target_subs, $_;
-                            }
-                        }
+                        $target_subs = [Package::Stash->new($target)->list_all_symbols("CODE")];
                     }
                     for (@$target_subs) {
                         push @s, $_ if $_ !~~ @s && $_ =~ $sub_name;
