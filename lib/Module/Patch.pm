@@ -33,7 +33,7 @@ sub import {
         for my $exp (@_) {
             die "$exp is not exported by ".__PACKAGE__
                 unless grep { $_ eq $exp } @EXPORT_OK;
-            *{"$caller\::$exp"} = \&{$_};
+            *{"$caller\::$exp"} = \&{$exp};
         }
     } else {
         # we are subclassed, patch caller with patch_data()
